@@ -1,16 +1,13 @@
 package nextstep.security.config;
 
-
 import org.springframework.web.filter.GenericFilterBean;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 public class FilterChainProxy extends GenericFilterBean {
-
     private final List<SecurityFilterChain> filterChains;
 
     public FilterChainProxy(List<SecurityFilterChain> filterChains) {
@@ -26,13 +23,12 @@ public class FilterChainProxy extends GenericFilterBean {
     }
 
     private List<Filter> getFilters(HttpServletRequest request) {
-        for (SecurityFilterChain filterChain : filterChains) {
-            if (filterChain.matches(request)) {
-                return filterChain.getFilters();
+        for (SecurityFilterChain chain : this.filterChains) {
+            if (chain.matches(request)) {
+                return chain.getFilters();
             }
         }
-
-        return Collections.emptyList();
+        return null;
     }
 
     private static final class VirtualFilterChain implements FilterChain {
@@ -45,21 +41,22 @@ public class FilterChainProxy extends GenericFilterBean {
 
         private int currentPosition = 0;
 
-        public VirtualFilterChain(FilterChain originalChain, List<Filter> additionalFilters) {
-            this.originalChain = originalChain;
+        private VirtualFilterChain(FilterChain chain, List<Filter> additionalFilters) {
+            this.originalChain = chain;
             this.additionalFilters = additionalFilters;
             this.size = additionalFilters.size();
         }
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-            if (currentPosition == size) {
-                originalChain.doFilter(request, response);
-            } else {
-                currentPosition++;
-                Filter nextFilter = additionalFilters.get(currentPosition - 1);
-                nextFilter.doFilter(request, response, this);
+            if (this.currentPosition == this.size) {
+                this.originalChain.doFilter(request, response);
+                return;
             }
+            this.currentPosition++;
+            Filter nextFilter = this.additionalFilters.get(this.currentPosition - 1);
+            nextFilter.doFilter(request, response, this);
         }
+
     }
 }

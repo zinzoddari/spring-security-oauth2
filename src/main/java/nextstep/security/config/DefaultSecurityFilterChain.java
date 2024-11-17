@@ -1,25 +1,20 @@
 package nextstep.security.config;
 
-
-import nextstep.security.access.matcher.RequestMatcher;
-
-import javax.servlet.Filter;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.Filter;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public class DefaultSecurityFilterChain implements SecurityFilterChain {
 
-    private final RequestMatcher requestMatcher;
     private final List<Filter> filters;
 
-    public DefaultSecurityFilterChain(RequestMatcher requestMatcher, List<Filter> filters) {
-        this.requestMatcher = requestMatcher;
+    public DefaultSecurityFilterChain(List<Filter> filters) {
         this.filters = filters;
     }
 
     @Override
     public boolean matches(HttpServletRequest request) {
-        return requestMatcher.matches(request);
+        return true;
     }
 
     @Override

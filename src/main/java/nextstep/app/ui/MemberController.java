@@ -3,6 +3,7 @@ package nextstep.app.ui;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.security.authentication.Authentication;
+import nextstep.security.authorization.Secured;
 import nextstep.security.context.SecurityContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,17 +26,20 @@ public class MemberController {
         return ResponseEntity.ok(members);
     }
 
+    @Secured("ADMIN")
+    @GetMapping("/search")
+    public ResponseEntity<List<Member>> search() {
+        List<Member> members = memberRepository.findAll();
+        return ResponseEntity.ok(members);
+    }
+
     @GetMapping("/members/me")
     public ResponseEntity<Member> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = memberRepository.findByEmail((String) authentication.getPrincipal()).orElseThrow(RuntimeException::new);
+        String email = authentication.getPrincipal().toString();
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(RuntimeException::new);
+
         return ResponseEntity.ok(member);
     }
-
-    @GetMapping("/members/authentication")
-    public ResponseEntity<Authentication> authentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ResponseEntity.ok(authentication);
-    }
-
 }

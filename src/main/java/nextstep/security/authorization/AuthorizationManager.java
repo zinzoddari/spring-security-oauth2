@@ -2,8 +2,7 @@ package nextstep.security.authorization;
 
 import nextstep.security.authentication.Authentication;
 
-import javax.servlet.http.HttpServletRequest;
-
-public interface AuthorizationManager {
-    boolean check(HttpServletRequest request, Authentication authentication);
+@FunctionalInterface
+public interface AuthorizationManager<T> {
+    AuthorizationDecision check(Authentication authentication, T object);
 }

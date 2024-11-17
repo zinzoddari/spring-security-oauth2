@@ -1,9 +1,8 @@
 package nextstep.security.userdetails;
 
-import java.io.Serializable;
 import java.util.Set;
 
-public interface UserDetails extends Serializable {
+public interface UserDetails {
     String getUsername();
 
     String getPassword();

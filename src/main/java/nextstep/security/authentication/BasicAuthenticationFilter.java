@@ -1,72 +1,93 @@
 package nextstep.security.authentication;
 
+import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
-import nextstep.security.exception.AuthenticationException;
+import nextstep.security.userdetails.UserDetailsService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Optional;
+import java.util.List;
 
-public class BasicAuthenticationFilter extends GenericFilterBean {
+public class BasicAuthenticationFilter extends OncePerRequestFilter {
+    public static final String AUTHENTICATION_SCHEME_BASIC = "Basic";
 
     private final AuthenticationManager authenticationManager;
 
-    public BasicAuthenticationFilter(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    public BasicAuthenticationFilter(UserDetailsService userDetailsService) {
+        this.authenticationManager = new ProviderManager(
+                List.of(new DaoAuthenticationProvider(userDetailsService))
+        );
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            Authentication authRequest = convertAuthenticationRequest((HttpServletRequest) request);
-
+            Authentication authRequest = convert(request);
             if (authRequest == null) {
-                chain.doFilter(request, response);
+                filterChain.doFilter(request, response);
                 return;
             }
+            String username = authRequest.getPrincipal().toString();
 
-            Authentication authResult = authenticationManager.authenticate(authRequest);
-            SecurityContextHolder.getContext().setAuthentication(authResult);
+            if (authenticationIsRequired(username)) {
+                Authentication authResult = this.authenticationManager.authenticate(authRequest);
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(authResult);
+                SecurityContextHolder.setContext(context);
+            }
+
         } catch (AuthenticationException e) {
-            SecurityContextHolder.clearContext();
-            ((HttpServletResponse) response).sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+            response.setHeader("WWW-Authenticate", "Basic realm=\"realmName\"");
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
             return;
         }
 
-        chain.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
 
-    private Authentication convertAuthenticationRequest(HttpServletRequest request) {
-        Optional<String> header = Optional.ofNullable(request.getHeader("Authorization"));
-
-        if (header.isEmpty() || !header.get().startsWith("Basic ")) {
+    private UsernamePasswordAuthenticationToken convert(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header == null) {
             return null;
         }
-
-        byte[] base64Token = header.get().substring(6).getBytes(StandardCharsets.UTF_8);
-        byte[] decoded = Base64.getDecoder().decode(base64Token);
-        String token = new String(decoded);
-
+        header = header.trim();
+        if (!StringUtils.startsWithIgnoreCase(header, AUTHENTICATION_SCHEME_BASIC)) {
+            return null;
+        }
+        if (header.equalsIgnoreCase(AUTHENTICATION_SCHEME_BASIC)) {
+            throw new AuthenticationException();
+        }
+        byte[] base64Token = header.substring(6).getBytes(StandardCharsets.UTF_8);
+        byte[] decoded = decode(base64Token);
+        String token = new String(decoded, StandardCharsets.UTF_8);
         int delim = token.indexOf(":");
         if (delim == -1) {
-            return null;
+            throw new AuthenticationException();
         }
 
-        String email = token.substring(0, delim);
-        String password = token.substring(delim + 1);
-
-        return UsernamePasswordAuthentication.ofRequest(email, password);
+        return UsernamePasswordAuthenticationToken
+                .unauthenticated(token.substring(0, delim), token.substring(delim + 1));
     }
 
+    private byte[] decode(byte[] base64Token) {
+        try {
+            return Base64.getDecoder().decode(base64Token);
+        } catch (IllegalArgumentException ex) {
+            throw new AuthenticationException();
+        }
+    }
 
+    private boolean authenticationIsRequired(String username) {
+        Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
+        return existingAuth == null || !existingAuth.getPrincipal().equals(username) || !existingAuth.isAuthenticated();
+    }
 }

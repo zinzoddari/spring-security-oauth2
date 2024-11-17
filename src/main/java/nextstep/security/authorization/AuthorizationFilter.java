@@ -1,39 +1,43 @@
 package nextstep.security.authorization;
 
 import nextstep.security.authentication.Authentication;
-import nextstep.security.authorization.manager.RequestAuthorizationManager;
+import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.context.SecurityContextHolder;
-import nextstep.security.exception.AuthenticationException;
-import nextstep.security.exception.AuthorizationException;
 import org.springframework.web.filter.GenericFilterBean;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AuthorizationFilter extends GenericFilterBean {
 
-    private final RequestAuthorizationManager authorizationManager;
+    private final AuthorizationManager<HttpServletRequest> authorizationManager;
 
-    public AuthorizationFilter(RequestAuthorizationManager authorizationManager) {
+    public AuthorizationFilter(AuthorizationManager<HttpServletRequest> authorizationManager) {
         this.authorizationManager = authorizationManager;
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws ServletException, IOException {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         try {
-            if (!authorizationManager.check((HttpServletRequest) request, authentication)) {
-                throw new AuthorizationException();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AuthorizationDecision decision = this.authorizationManager.check(authentication, request);
+            if (decision != null && !decision.isGranted()) {
+                throw new AccessDeniedException("Access Denied");
             }
-        } catch (AuthenticationException exception) {
-            throw exception;
-        }
 
-        chain.doFilter(request, response);
+            chain.doFilter(request, response);
+        } catch (AccessDeniedException e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        } catch (AuthenticationException e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        }
     }
 }

@@ -1,23 +1,23 @@
 package nextstep.security.context;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.util.Optional;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-public class HttpSessionSecurityContextRepository implements SecurityContextRepository {
+public class HttpSessionSecurityContextRepository {
     public static final String SPRING_SECURITY_CONTEXT_KEY = "SPRING_SECURITY_CONTEXT";
 
-    @Override
-    public Optional<SecurityContext> loadContext(HttpServletRequest request) {
-        HttpSession httpSession = request.getSession();
-        Object contextFromSession = httpSession.getAttribute(SPRING_SECURITY_CONTEXT_KEY);
-        return Optional.ofNullable((SecurityContext) contextFromSession);
+    public SecurityContext loadContext(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+
+        return (SecurityContext) session.getAttribute(SPRING_SECURITY_CONTEXT_KEY);
     }
 
-    @Override
     public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
-        HttpSession httpSession = request.getSession();
-        httpSession.setAttribute(SPRING_SECURITY_CONTEXT_KEY, context);
+        HttpSession session = request.getSession();
+        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, context);
     }
 }
