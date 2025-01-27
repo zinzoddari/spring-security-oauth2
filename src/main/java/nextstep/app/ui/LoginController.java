@@ -4,7 +4,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-//import nextstep.oauth2.userinfo.OAuth2User;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;

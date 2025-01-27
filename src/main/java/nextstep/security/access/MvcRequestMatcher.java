@@ -1,8 +1,7 @@
 package nextstep.security.access;
 
-import org.springframework.http.HttpMethod;
-
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpMethod;
 
 public class MvcRequestMatcher implements RequestMatcher {
 

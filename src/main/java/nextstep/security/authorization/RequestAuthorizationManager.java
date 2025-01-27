@@ -1,10 +1,10 @@
 package nextstep.security.authorization;
 
+import jakarta.servlet.http.HttpServletRequest;
 import nextstep.security.access.RequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.authentication.Authentication;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public class RequestAuthorizationManager implements AuthorizationManager<HttpServletRequest> {

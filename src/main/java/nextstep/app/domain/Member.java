@@ -36,4 +36,8 @@ public class Member {
     public Set<String> getRoles() {
         return roles;
     }
+
+    public boolean matchPassword(String password) {
+        return this.password.equals(password);
+    }
 }

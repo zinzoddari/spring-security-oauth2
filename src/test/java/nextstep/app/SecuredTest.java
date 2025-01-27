@@ -1,7 +1,8 @@
 package nextstep.app;
 
 import nextstep.app.domain.Member;
-import nextstep.app.infrastructure.InmemoryMemberRepository;
+import nextstep.app.domain.MemberRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Base64;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -21,11 +23,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class SecuredTest {
-    private static final Member TEST_ADMIN_MEMBER = InmemoryMemberRepository.ADMIN_MEMBER;
-    private static final Member TEST_USER_MEMBER = InmemoryMemberRepository.USER_MEMBER;
+    private final Member TEST_ADMIN_MEMBER = new Member("a@a.com", "password", "a", "", Set.of("ADMIN"));
+    private final Member TEST_USER_MEMBER = new Member("b@b.com", "password", "b", "", Set.of());
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @BeforeEach
+    void setUp() {
+        memberRepository.save(TEST_ADMIN_MEMBER);
+        memberRepository.save(TEST_USER_MEMBER);
+    }
 
     @DisplayName("ADMIN 권한을 가진 사용자가 요청할 경우 모든 회원 정보를 조회할 수 있다.")
     @Test
