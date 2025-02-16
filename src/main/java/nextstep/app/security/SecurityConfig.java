@@ -1,4 +1,4 @@
-package nextstep.app;
+package nextstep.app.security;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
@@ -9,6 +9,7 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.GithubLoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.*;
 import nextstep.security.config.DefaultSecurityFilterChain;
@@ -32,9 +33,11 @@ import java.util.Set;
 public class SecurityConfig {
 
     private final MemberRepository memberRepository;
+    private final GithubLoginProperties githubLoginProperties;
 
-    public SecurityConfig(MemberRepository memberRepository) {
+    public SecurityConfig(MemberRepository memberRepository, GithubLoginProperties githubLoginProperties) {
         this.memberRepository = memberRepository;
+        this.githubLoginProperties = githubLoginProperties;
     }
 
     @Bean
@@ -59,6 +62,7 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
+                        new GithubLoginRedirectFilter(githubLoginProperties),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
