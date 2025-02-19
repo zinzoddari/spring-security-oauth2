@@ -24,8 +24,9 @@ class GithubLoginRedirectFilterTest {
 
     @BeforeEach
     void init() {
+        final String clientId = "123456";
         final String secretKey = "123456";
-        final GithubLoginProperties properties = new GithubLoginProperties(secretKey);
+        final GithubLoginProperties properties = new GithubLoginProperties(clientId, secretKey);
 
         filter = new GithubLoginRedirectFilter(properties);
 

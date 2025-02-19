@@ -1,5 +1,6 @@
 package nextstep.app.security;
 
+import jakarta.servlet.Filter;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
@@ -9,6 +10,7 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.GithubAuthenticationFilter;
 import nextstep.security.authentication.GithubLoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.*;
@@ -63,6 +65,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new GithubLoginRedirectFilter(githubLoginProperties),
+                        new GithubAuthenticationFilter(githubLoginProperties, userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -87,26 +90,49 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> {
-            Member member = memberRepository.findByEmail(username)
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) {
+                Member member = memberRepository.findByEmail(username)
                     .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자입니다."));
+                return new UserDetails() {
+                    @Override
+                    public String getUsername() {
+                        return member.getEmail();
+                    }
 
-            return new UserDetails() {
-                @Override
-                public String getUsername() {
-                    return member.getEmail();
-                }
+                    @Override
+                    public String getPassword() {
+                        return member.getPassword();
+                    }
 
-                @Override
-                public String getPassword() {
-                    return member.getPassword();
-                }
+                    @Override
+                    public Set<String> getAuthorities() {
+                        return member.getRoles();
+                    }
+                };
+            }
 
-                @Override
-                public Set<String> getAuthorities() {
-                    return member.getRoles();
-                }
-            };
+            @Override
+            public UserDetails singup(String username) {
+                Member member = memberRepository.save(new Member(username, null, null, null, Set.of("USER")));
+                return new UserDetails() {
+                    @Override
+                    public String getUsername() {
+                        return member.getEmail();
+                    }
+
+                    @Override
+                    public String getPassword() {
+                        return member.getPassword();
+                    }
+
+                    @Override
+                    public Set<String> getAuthorities() {
+                        return member.getRoles();
+                    }
+                };
+            }
         };
     }
 }
