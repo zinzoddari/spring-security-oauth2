@@ -17,8 +17,8 @@ class SecurityConfigTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Value("${oauth2.providers.github.secret-key}")
-    private String secretKey;
+    @Value("${oauth2.providers.github.client-id}")
+    private String clientId;
 
     @Test
     @DisplayName("리다이렉트 정보를 성공적으로 받아 옵니다.")
@@ -27,7 +27,7 @@ class SecurityConfigTest {
         final String requestUri = "/oauth2/authorization/github";
 
         final String expectedRedirectUri = "https://github.com/login/oauth/authorize" +
-                "?client_id=" + secretKey +
+                "?client_id=" + clientId +
                 "&response_type=code" +
                 "&scope=read:user" +
                 "&redirect_uri=http://localhost:8080/login/oauth2/code/github";

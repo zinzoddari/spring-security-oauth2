@@ -22,8 +22,8 @@ public class GithubLoginRedirectRequest {
         return new GithubLoginRedirectRequest(responseType, clientId, scope, redirectUri);
     }
 
-    public String getRedirectUri() {
-        return UriComponentsBuilder.fromHttpUrl("https://github.com/login/oauth/authorize")
+    public String getRedirectUri(final String requestUri) {
+        return UriComponentsBuilder.fromHttpUrl(requestUri)
                 .queryParam("client_id", clientId)
                 .queryParam("response_type", responseType)
                 .queryParam("scope", scope)

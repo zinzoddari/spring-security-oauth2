@@ -30,26 +30,32 @@ public class GithubLoginRedirectFilter implements Filter {
         final String httpMethod = httpServletRequest.getMethod();
         final String requestUri = httpServletRequest.getRequestURI();
 
-        if (isGithubLogin(httpMethod, requestUri)) {
-            final String provider = requestUri.substring(requestUri.indexOf(OAUTH2_LOGIN_REDIRECT_URI));
+        if (isOauth2Login(httpMethod, requestUri)) {
+            final String provider = requestUri.replace(OAUTH2_LOGIN_REDIRECT_URI, "");
+
+            Oauth2LoginProperties.OAuth2Provider oAuth2Provider = oauth2LoginProperties.getProvider(provider);
+
+            if (oAuth2Provider == null) {
+                chain.doFilter(request, response);
+            }
 
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
-            final GithubLoginRedirectRequest redirectRequest = createdRedirectRequest(provider);
+            final GithubLoginRedirectRequest redirectRequest = createdRedirectRequest(oAuth2Provider);
 
-            httpServletResponse.sendRedirect(redirectRequest.getRedirectUri());
+            httpServletResponse.sendRedirect(redirectRequest.getRedirectUri(oAuth2Provider.getLoginRequestUri()));
             return;
         }
 
         chain.doFilter(request, response);
     }
 
-    private boolean isGithubLogin(final String httpMethod, final String requestUri) {
+    private boolean isOauth2Login(final String httpMethod, final String requestUri) {
         return OAUTH2_LOGIN_REDIRECT_METHOD.equals(httpMethod) && requestUri.startsWith(OAUTH2_LOGIN_REDIRECT_URI);
     }
 
-    private GithubLoginRedirectRequest createdRedirectRequest(final String provider) {
-        final String clientId = oauth2LoginProperties.getGithub().getSecretKey();
+    private GithubLoginRedirectRequest createdRedirectRequest(Oauth2LoginProperties.OAuth2Provider provider) {
+        final String clientId = provider.getClientId();
         final String responseType = "code";
         final String scope = "read:user";
         final String redirectUri = "http://localhost:8080/login/oauth2/code/github";

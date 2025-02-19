@@ -16,13 +16,15 @@ class GithubLoginRedirectRequestTest {
         final String scope = "read:user";
         final String redirectUri = "http://localhost:8080/index";
 
+        final String requestUri = "https://github.com/login/oauth/authorize";
+
         final String expectedResult =
-                String.format("https://github.com/login/oauth/authorize?client_id=%s&response_type=%s&scope=%s&redirect_uri=%s"
-                        , clientId, responseType, scope, redirectUri);
+                String.format("%s?client_id=%s&response_type=%s&scope=%s&redirect_uri=%s"
+                        , requestUri, clientId, responseType, scope, redirectUri);
 
         //when
         final String result = GithubLoginRedirectRequest.created(responseType, clientId, scope, redirectUri)
-                .getRedirectUri();
+                .getRedirectUri(requestUri);
 
         //then
         assertThat(result).isEqualTo(expectedResult);

@@ -11,6 +11,10 @@ public class Oauth2LoginProperties {
 
     private Map<String, OAuth2Provider> providers;
 
+    public OAuth2Provider getProvider(final String provider) {
+        return providers.get(provider);
+    }
+
     public OAuth2Provider getGithub() {
         return providers.get("github");
     }
@@ -32,6 +36,8 @@ public class Oauth2LoginProperties {
 
         private String secretKey;
 
+        private String loginRequestUri;
+
         private String loginRedirectUri;
 
         public void setClientId(String clientId) {
@@ -40,6 +46,10 @@ public class Oauth2LoginProperties {
 
         public void setSecretKey(String secretKey) {
             this.secretKey = secretKey;
+        }
+
+        public void setLoginRequestUri(String loginRequestUri) {
+            this.loginRequestUri = loginRequestUri;
         }
 
         public void setLoginRedirectUri(String loginRedirectUri) {
@@ -52,6 +62,10 @@ public class Oauth2LoginProperties {
 
         public String getSecretKey() {
             return secretKey;
+        }
+
+        public String getLoginRequestUri() {
+            return loginRequestUri;
         }
 
         public String getLoginRedirectUri() {
