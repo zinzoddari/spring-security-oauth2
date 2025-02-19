@@ -1,0 +1,11 @@
+oauth2:
+  providers:
+    github:
+      client-id:
+      secret-key:
+      login-redirect-uri: /oauth2/authorization/github
+    google:
+      client-id:
+      secret-key:
+      login-redirect-uri: /o/oauth2/v2/auth
+      

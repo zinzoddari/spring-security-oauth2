@@ -7,20 +7,20 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.app.security.GithubLoginProperties;
+import nextstep.app.security.Oauth2LoginProperties;
 import nextstep.security.authentication.domain.GithubLoginRedirectRequest;
 
 import java.io.IOException;
 
 public class GithubLoginRedirectFilter implements Filter {
 
-    private static final String GITHUB_LOGIN_REDIRECT_METHOD = "GET";
-    private static final String GITHUB_LOGIN_REDIRECT_URI = "/oauth2/authorization/github";
+    private static final String OAUTH2_LOGIN_REDIRECT_METHOD = "GET";
+    private static final String OAUTH2_LOGIN_REDIRECT_URI = "/oauth2/authorization/";
 
-    private final GithubLoginProperties githubLoginProperties;
+    private final Oauth2LoginProperties oauth2LoginProperties;
 
-    public GithubLoginRedirectFilter(GithubLoginProperties githubLoginProperties) {
-        this.githubLoginProperties = githubLoginProperties;
+    public GithubLoginRedirectFilter(Oauth2LoginProperties oauth2LoginProperties) {
+        this.oauth2LoginProperties = oauth2LoginProperties;
     }
 
     @Override
@@ -31,9 +31,11 @@ public class GithubLoginRedirectFilter implements Filter {
         final String requestUri = httpServletRequest.getRequestURI();
 
         if (isGithubLogin(httpMethod, requestUri)) {
+            final String provider = requestUri.substring(requestUri.indexOf(OAUTH2_LOGIN_REDIRECT_URI));
+
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
-            final GithubLoginRedirectRequest redirectRequest = createdRedirectRequest();
+            final GithubLoginRedirectRequest redirectRequest = createdRedirectRequest(provider);
 
             httpServletResponse.sendRedirect(redirectRequest.getRedirectUri());
             return;
@@ -43,11 +45,11 @@ public class GithubLoginRedirectFilter implements Filter {
     }
 
     private boolean isGithubLogin(final String httpMethod, final String requestUri) {
-        return GITHUB_LOGIN_REDIRECT_METHOD.equals(httpMethod) && GITHUB_LOGIN_REDIRECT_URI.startsWith(requestUri);
+        return OAUTH2_LOGIN_REDIRECT_METHOD.equals(httpMethod) && requestUri.startsWith(OAUTH2_LOGIN_REDIRECT_URI);
     }
 
-    private GithubLoginRedirectRequest createdRedirectRequest() {
-        final String clientId = githubLoginProperties.getSecretKey();
+    private GithubLoginRedirectRequest createdRedirectRequest(final String provider) {
+        final String clientId = oauth2LoginProperties.getGithub().getSecretKey();
         final String responseType = "code";
         final String scope = "read:user";
         final String redirectUri = "http://localhost:8080/login/oauth2/code/github";

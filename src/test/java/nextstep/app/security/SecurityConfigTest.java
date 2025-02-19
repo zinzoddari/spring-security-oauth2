@@ -17,7 +17,7 @@ class SecurityConfigTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Value("${oauth2.github.secret-key}")
+    @Value("${oauth2.providers.github.secret-key}")
     private String secretKey;
 
     @Test

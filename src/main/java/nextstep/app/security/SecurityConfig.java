@@ -1,6 +1,5 @@
 package nextstep.app.security;
 
-import jakarta.servlet.Filter;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
@@ -35,11 +34,11 @@ import java.util.Set;
 public class SecurityConfig {
 
     private final MemberRepository memberRepository;
-    private final GithubLoginProperties githubLoginProperties;
+    private final Oauth2LoginProperties oauth2LoginProperties;
 
-    public SecurityConfig(MemberRepository memberRepository, GithubLoginProperties githubLoginProperties) {
+    public SecurityConfig(MemberRepository memberRepository, Oauth2LoginProperties oauth2LoginProperties) {
         this.memberRepository = memberRepository;
-        this.githubLoginProperties = githubLoginProperties;
+        this.oauth2LoginProperties = oauth2LoginProperties;
     }
 
     @Bean
@@ -64,8 +63,8 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
-                        new GithubLoginRedirectFilter(githubLoginProperties),
-                        new GithubAuthenticationFilter(githubLoginProperties, userDetailsService()),
+                        new GithubLoginRedirectFilter(oauth2LoginProperties),
+                        new GithubAuthenticationFilter(oauth2LoginProperties, userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

@@ -7,7 +7,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.app.security.GithubLoginProperties;
+import nextstep.app.security.Oauth2LoginProperties;
 import nextstep.security.authentication.domain.GithubLoginAccessTokenRequest;
 import nextstep.security.authentication.domain.GithubLoginAccessTokenResponse;
 import nextstep.security.authentication.domain.GithubLoginUserResponse;
@@ -25,13 +25,13 @@ import java.util.List;
 
 public class GithubAuthenticationFilter implements Filter {
 
-    private final GithubLoginProperties githubLoginProperties;
+    private final Oauth2LoginProperties oauth2LoginProperties;
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
-    public GithubAuthenticationFilter(GithubLoginProperties githubLoginProperties, UserDetailsService userDetailsService) {
-        this.githubLoginProperties = githubLoginProperties;
+    public GithubAuthenticationFilter(Oauth2LoginProperties oauth2LoginProperties, UserDetailsService userDetailsService) {
+        this.oauth2LoginProperties = oauth2LoginProperties;
         this.userDetailsService = userDetailsService;
         this.authenticationManager = new ProviderManager(
                 List.of(new DaoAuthenticationProvider(userDetailsService))
@@ -50,7 +50,7 @@ public class GithubAuthenticationFilter implements Filter {
             final String code = servletRequest.getParameterValues("code")[0];
 
             final GithubLoginAccessTokenRequest accessTokenRequest
-                    = GithubLoginAccessTokenRequest.created(githubLoginProperties.getClientId(), githubLoginProperties.getSecretKey(), code);
+                    = GithubLoginAccessTokenRequest.created(oauth2LoginProperties.getGithub().getClientId(), oauth2LoginProperties.getGithub().getSecretKey(), code);
 
             RestTemplate restTemplate = new RestTemplate();
 
