@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import nextstep.app.security.Oauth2LoginProperties;
 import nextstep.security.authentication.domain.GithubLoginAccessTokenRequest;
 import nextstep.security.authentication.domain.GithubLoginAccessTokenResponse;
-import nextstep.security.authentication.domain.GithubLoginUserResponse;
+import nextstep.security.authentication.domain.OAuthLoginUserResponse;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
@@ -23,14 +23,14 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.List;
 
-public class GithubAuthenticationFilter implements Filter {
+public class OAuthAuthenticationFilter implements Filter {
 
     private final Oauth2LoginProperties oauth2LoginProperties;
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
-    public GithubAuthenticationFilter(Oauth2LoginProperties oauth2LoginProperties, UserDetailsService userDetailsService) {
+    public OAuthAuthenticationFilter(Oauth2LoginProperties oauth2LoginProperties, UserDetailsService userDetailsService) {
         this.oauth2LoginProperties = oauth2LoginProperties;
         this.userDetailsService = userDetailsService;
         this.authenticationManager = new ProviderManager(
@@ -61,8 +61,8 @@ public class GithubAuthenticationFilter implements Filter {
                 RequestEntity<Void> getRequest = RequestEntity.get("http://localhost:8089/user").header("Authorization", String.join(" ", response1.getTokenType(), response1.getAccessToken()))
                                 .build();
 
-                ResponseEntity<GithubLoginUserResponse> userResponse = restTemplate.exchange(getRequest, GithubLoginUserResponse.class);
-                GithubLoginUserResponse body = userResponse.getBody();
+                ResponseEntity<OAuthLoginUserResponse> userResponse = restTemplate.exchange(getRequest, OAuthLoginUserResponse.class);
+                OAuthLoginUserResponse body = userResponse.getBody();
 
                 if (userResponse.getStatusCode().is2xxSuccessful()) {
                     assert body != null;

@@ -2,7 +2,7 @@ package nextstep.security.authentication.domain;
 
 import org.springframework.web.util.UriComponentsBuilder;
 
-public class GithubLoginRedirectRequest {
+public class OAuthLoginRedirectRequest {
     private final String responseType;
 
     private final String clientId;
@@ -11,15 +11,15 @@ public class GithubLoginRedirectRequest {
 
     private final String redirectUri;
 
-    protected GithubLoginRedirectRequest(String responseType, String clientId, String scope, String redirectUri) {
+    protected OAuthLoginRedirectRequest(String responseType, String clientId, String scope, String redirectUri) {
         this.responseType = responseType;
         this.clientId = clientId;
         this.scope = scope;
         this.redirectUri = redirectUri;
     }
 
-    public static GithubLoginRedirectRequest created(final String responseType, final String clientId, final String scope, final String redirectUri) {
-        return new GithubLoginRedirectRequest(responseType, clientId, scope, redirectUri);
+    public static OAuthLoginRedirectRequest created(final String responseType, final String clientId, final String scope, final String redirectUri) {
+        return new OAuthLoginRedirectRequest(responseType, clientId, scope, redirectUri);
     }
 
     public String getRedirectUri(final String requestUri) {

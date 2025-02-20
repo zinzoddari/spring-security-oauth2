@@ -2,7 +2,7 @@ package nextstep.security.authentication.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class GithubLoginUserResponse {
+public class OAuthLoginUserResponse {
 
     private String email;
 
@@ -11,7 +11,7 @@ public class GithubLoginUserResponse {
     @JsonProperty("avatar_url")
     private String avatarUrl;
 
-    private GithubLoginUserResponse() {
+    private OAuthLoginUserResponse() {
     }
 
     public String getEmail() {

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class GithubLoginRedirectRequestTest {
+class OAuthLoginRedirectRequestTest {
 
     @Test
     @DisplayName("성공적으로, Github 로그인을 위한 리다이렉트 정보를 생성합니다.")
@@ -23,7 +23,7 @@ class GithubLoginRedirectRequestTest {
                         , requestUri, clientId, responseType, scope, redirectUri);
 
         //when
-        final String result = GithubLoginRedirectRequest.created(responseType, clientId, scope, redirectUri)
+        final String result = OAuthLoginRedirectRequest.created(responseType, clientId, scope, redirectUri)
                 .getRedirectUri(requestUri);
 
         //then
