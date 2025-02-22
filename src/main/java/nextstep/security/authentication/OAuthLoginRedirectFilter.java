@@ -58,7 +58,7 @@ public class OAuthLoginRedirectFilter implements Filter {
     private OAuthLoginRedirectRequest createdRedirectRequest(final Oauth2LoginProperties.OAuth2Provider provider) {
         final String clientId = provider.getClientId();
         final String responseType = "code";
-        final String scope = "read:user";
+        final String scope = provider.getScope();
         final String redirectUri = provider.getLoginRedirectUri();
 
         return OAuthLoginRedirectRequest.created(responseType, clientId, scope, redirectUri);

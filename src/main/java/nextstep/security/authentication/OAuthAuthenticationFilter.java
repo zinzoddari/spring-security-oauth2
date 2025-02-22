@@ -16,6 +16,8 @@ import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
 import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +27,8 @@ import java.util.List;
 
 public class OAuthAuthenticationFilter implements Filter {
 
+    private static final String OAUTH2_LOGIN_TOKEN_REQUEST_METHOD = "GET";
+    private static final String OAUTH2_LOGIN_TOKEN_REQUEST_URI = "/login/oauth2/code/";
     private final Oauth2LoginProperties oauth2LoginProperties;
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
@@ -46,19 +50,22 @@ public class OAuthAuthenticationFilter implements Filter {
         final String requestUri = servletRequest.getRequestURI();
         final String httpMethod = servletRequest.getMethod();
 
-        if (requestUri.startsWith("/login/oauth2/code/github") && httpMethod.equals("GET")) {
+        if (isOauth2Login(httpMethod, requestUri)) {
+            final String provider = requestUri.replace(OAUTH2_LOGIN_TOKEN_REQUEST_URI, "");
             final String code = servletRequest.getParameterValues("code")[0];
 
+            final Oauth2LoginProperties.OAuth2Provider oAuth2Provider = oauth2LoginProperties.getProvider(provider);
             final GithubLoginAccessTokenRequest accessTokenRequest
-                    = GithubLoginAccessTokenRequest.created(oauth2LoginProperties.getGithub().getClientId(), oauth2LoginProperties.getGithub().getSecretKey(), code);
+                    = GithubLoginAccessTokenRequest.created(oAuth2Provider.getClientId(), oAuth2Provider.getSecretKey(), code, oAuth2Provider.getGrantType(), oAuth2Provider.getLoginRedirectUri());
 
             RestTemplate restTemplate = new RestTemplate();
+            HttpEntity<GithubLoginAccessTokenRequest> httpEntity = new HttpEntity<>(accessTokenRequest);
 
-            ResponseEntity<GithubLoginAccessTokenResponse> responseEntity = restTemplate.postForEntity("http://localhost:8089/login/oauth/access_token", accessTokenRequest, GithubLoginAccessTokenResponse.class);
+            ResponseEntity<GithubLoginAccessTokenResponse> responseEntity = restTemplate.exchange(oAuth2Provider.getTokenRequestUri(), HttpMethod.POST, httpEntity, GithubLoginAccessTokenResponse.class);
             GithubLoginAccessTokenResponse response1 = responseEntity.getBody();
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                RequestEntity<Void> getRequest = RequestEntity.get("http://localhost:8089/user").header("Authorization", String.join(" ", response1.getTokenType(), response1.getAccessToken()))
+                RequestEntity<Void> getRequest = RequestEntity.get(oAuth2Provider.getUserRequestUri()).header("Authorization", String.join(" ", response1.getTokenType(), response1.getAccessToken()))
                                 .build();
 
                 ResponseEntity<OAuthLoginUserResponse> userResponse = restTemplate.exchange(getRequest, OAuthLoginUserResponse.class);
@@ -91,5 +98,9 @@ public class OAuthAuthenticationFilter implements Filter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isOauth2Login(final String httpMethod, final String requestUri) {
+        return OAUTH2_LOGIN_TOKEN_REQUEST_METHOD.equals(httpMethod) && requestUri.startsWith(OAUTH2_LOGIN_TOKEN_REQUEST_URI);
     }
 }

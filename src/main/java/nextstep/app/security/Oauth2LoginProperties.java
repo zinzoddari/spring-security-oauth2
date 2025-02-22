@@ -36,9 +36,17 @@ public class Oauth2LoginProperties {
 
         private String secretKey;
 
+        private String scope;
+
+        private String grantType;
+
         private String loginRequestUri;
 
         private String loginRedirectUri;
+
+        private String tokenRequestUri;
+
+        private String userRequestUri;
 
         public void setClientId(String clientId) {
             this.clientId = clientId;
@@ -46,6 +54,14 @@ public class Oauth2LoginProperties {
 
         public void setSecretKey(String secretKey) {
             this.secretKey = secretKey;
+        }
+
+        public void setScope(String scope) {
+            this.scope = scope;
+        }
+
+        public void setGrantType(String grantType) {
+            this.grantType = grantType;
         }
 
         public void setLoginRequestUri(String loginRequestUri) {
@@ -56,6 +72,14 @@ public class Oauth2LoginProperties {
             this.loginRedirectUri = loginRedirectUri;
         }
 
+        public void setTokenRequestUri(String tokenRequestUri) {
+            this.tokenRequestUri = tokenRequestUri;
+        }
+
+        public void setUserRequestUri(String userRequestUri) {
+            this.userRequestUri = userRequestUri;
+        }
+
         public String getClientId() {
             return clientId;
         }
@@ -64,12 +88,28 @@ public class Oauth2LoginProperties {
             return secretKey;
         }
 
+        public String getScope() {
+            return scope;
+        }
+
+        public String getGrantType() {
+            return grantType;
+        }
+
         public String getLoginRequestUri() {
             return loginRequestUri;
         }
 
         public String getLoginRedirectUri() {
             return loginRedirectUri;
+        }
+
+        public String getTokenRequestUri() {
+            return tokenRequestUri;
+        }
+
+        public String getUserRequestUri() {
+            return userRequestUri;
         }
     }
 }
