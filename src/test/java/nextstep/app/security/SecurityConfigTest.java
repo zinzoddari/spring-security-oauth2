@@ -17,41 +17,20 @@ class SecurityConfigTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Value("${oauth2.providers.github.client-id}")
-    private String githubClientId;
-
-    @Value("${oauth2.providers.google.client-id}")
-    private String googleClientId;
+    @Value("${oauth2.providers.test.client-id}")
+    private String clientId;
 
     @Test
     @DisplayName("리다이렉트 정보를 성공적으로 받아 옵니다.")
     void redirectTest() throws Exception {
         //given
-        final String requestUri = "/oauth2/authorization/github";
+        final String requestUri = "/oauth2/authorization/test";
 
-        final String expectedRedirectUri = "https://github.com/login/oauth/authorize" +
-                "?client_id=" + githubClientId +
+        final String expectedRedirectUri = "http://localhost:8089/login/oauth/authorize" +
+                "?client_id=" + clientId +
                 "&response_type=code" +
                 "&scope=read:user" +
-                "&redirect_uri=http://localhost:8080/login/oauth2/code/github";
-
-        //when & then
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
-                .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl(expectedRedirectUri));
-    }
-
-    @Test
-    @DisplayName("구글 oAuth 로그인 요청을 할 경우, 구글 리다이렉트 정보를 받아 옵니다.")
-    void googleRedirectTest() throws Exception {
-        //given
-        final String requestUri = "/oauth2/authorization/google";
-
-        final String expectedRedirectUri = "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id=" + googleClientId +
-                "&response_type=code" +
-                "&scope=read:user" +
-                "&redirect_uri=http://localhost:8080/login/oauth2/code/google";
+                "&redirect_uri=http://localhost:8080/login/oauth2/code/test";
 
         //when & then
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri))

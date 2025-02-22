@@ -2,7 +2,7 @@ package nextstep.security.authentication.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class GithubLoginAccessTokenRequest {
+public class OAuthLoginAccessTokenRequest {
 
     @JsonProperty("client_id")
     private String clientId;
@@ -18,11 +18,11 @@ public class GithubLoginAccessTokenRequest {
     @JsonProperty("redirect_uri")
     private String redirectUri;
 
-    private GithubLoginAccessTokenRequest() {
+    private OAuthLoginAccessTokenRequest() {
     }
 
-    public static GithubLoginAccessTokenRequest created(final String clientId, final String clientSecret, final String code, final String grantType, final String redirectUri) {
-        GithubLoginAccessTokenRequest request = new GithubLoginAccessTokenRequest();
+    public static OAuthLoginAccessTokenRequest created(final String clientId, final String clientSecret, final String code, final String grantType, final String redirectUri) {
+        OAuthLoginAccessTokenRequest request = new OAuthLoginAccessTokenRequest();
 
         request.clientId = clientId;
         request.clientSecret = clientSecret;

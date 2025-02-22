@@ -1,0 +1,11 @@
+oauth2:
+  providers:
+    test:
+      client-id: 1234
+      secret-key: 1234567
+      scope: read:user
+      grant-type: authorization_code
+      login-request-uri: http://localhost:8089/login/oauth/authorize
+      login-redirect-uri: http://localhost:8080/login/oauth2/code/test
+      token-request-uri: http://localhost:8089/login/oauth/access_token
+      user-request-uri: http://localhost:8089/user

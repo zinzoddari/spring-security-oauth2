@@ -30,25 +30,24 @@ public class OAuthLoginRedirectFilter implements Filter {
         final String httpMethod = httpServletRequest.getMethod();
         final String requestUri = httpServletRequest.getRequestURI();
 
-        if (isOauth2Login(httpMethod, requestUri)) {
-            final String provider = requestUri.replace(OAUTH2_LOGIN_REDIRECT_URI, "");
-
-            Oauth2LoginProperties.OAuth2Provider oAuth2Provider = oauth2LoginProperties.getProvider(provider);
-
-            if (oAuth2Provider == null) {
-                chain.doFilter(request, response);
-            }
-
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-
-            final OAuthLoginRedirectRequest redirectRequest = createdRedirectRequest(oAuth2Provider);
-
-            httpServletResponse.sendRedirect(redirectRequest.getRedirectUri(oAuth2Provider.getLoginRequestUri()));
-
+        if (!isOauth2Login(httpMethod, requestUri)) {
+            chain.doFilter(request, response);
             return;
         }
 
-        chain.doFilter(request, response);
+        final String provider = requestUri.replace(OAUTH2_LOGIN_REDIRECT_URI, "");
+
+        Oauth2LoginProperties.OAuth2Provider oAuth2Provider = oauth2LoginProperties.getProvider(provider);
+
+        if (oAuth2Provider == null) {
+            chain.doFilter(request, response);
+        }
+
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+
+        final OAuthLoginRedirectRequest redirectRequest = createdRedirectRequest(oAuth2Provider);
+
+        httpServletResponse.sendRedirect(redirectRequest.getRedirectUri(oAuth2Provider.getLoginRequestUri()));
     }
 
     private boolean isOauth2Login(final String httpMethod, final String requestUri) {
