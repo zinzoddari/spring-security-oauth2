@@ -1,11 +1,20 @@
 oauth2:
   providers:
     github:
-      client-id:
-      secret-key:
-      login-redirect-uri: /oauth2/authorization/github
+      client-id: 12345
+      secret-key: 1234567890
+      scope: read:user
+      grant-type: authorization_code
+      login-request-uri: https://github.com/login/oauth/authorize
+      login-redirect-uri: http://localhost:8080/login/oauth2/code/github
+      token-request-uri: https://github.com/login/oauth/access_token
+      user-request-uri: https://api.github.com/user
     google:
-      client-id:
-      secret-key:
-      login-redirect-uri: /o/oauth2/v2/auth
-      
+      client-id: 12345
+      secret-key: 1234567890
+      scope: https://www.googleapis.com/auth/userinfo.profile+https://www.googleapis.com/auth/userinfo.email
+      grant-type: authorization_code
+      login-request-uri: https://accounts.google.com/o/oauth2/v2/auth
+      login-redirect-uri: http://localhost:8080/login/oauth2/code/google
+      token-request-uri: https://oauth2.googleapis.com/token
+      user-request-uri: https://www.googleapis.com/oauth2/v3/userinfo
