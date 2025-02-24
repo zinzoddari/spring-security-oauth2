@@ -1,6 +1,5 @@
 package nextstep.security.authentication;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,17 +8,14 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.app.security.Oauth2LoginProperties;
-import nextstep.security.authentication.domain.OAuthLoginAccessTokenRequest;
 import nextstep.security.authentication.domain.OAuthLoginAccessTokenResponse;
 import nextstep.security.authentication.domain.OAuthLoginUserResponse;
-import nextstep.security.config.client.OAuthClient;
 import nextstep.security.config.client.OAuthManager;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
 import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
-import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.util.List;
@@ -73,7 +69,6 @@ public class OAuthAuthenticationFilter implements Filter {
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
             securityContextRepository.saveContext(context, servletRequest, servletResponse);
-            SecurityContextHolder.clearContext();
             servletResponse.sendRedirect("/");
         }
     }
