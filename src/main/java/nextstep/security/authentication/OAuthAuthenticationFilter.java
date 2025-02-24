@@ -13,6 +13,7 @@ import nextstep.security.authentication.domain.OAuthLoginAccessTokenRequest;
 import nextstep.security.authentication.domain.OAuthLoginAccessTokenResponse;
 import nextstep.security.authentication.domain.OAuthLoginUserResponse;
 import nextstep.security.config.client.OAuthClient;
+import nextstep.security.config.client.OAuthManager;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
@@ -32,7 +33,7 @@ public class OAuthAuthenticationFilter implements Filter {
     private final AuthenticationManager authenticationManager;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
-    private final OAuthClient oAuthClient;
+    private final OAuthManager oAuthManager;
 
     public OAuthAuthenticationFilter(Oauth2LoginProperties oauth2LoginProperties, UserDetailsService userDetailsService) {
         this.oauth2LoginProperties = oauth2LoginProperties;
@@ -40,7 +41,7 @@ public class OAuthAuthenticationFilter implements Filter {
         this.authenticationManager = new ProviderManager(
                 List.of(new DaoAuthenticationProvider(userDetailsService))
         );
-        this.oAuthClient = new OAuthClient();
+        this.oAuthManager = new OAuthManager(oauth2LoginProperties);
     }
 
     @Override
@@ -61,9 +62,9 @@ public class OAuthAuthenticationFilter implements Filter {
 
         final String code = servletRequest.getParameterValues("code")[0];
 
-        final OAuthLoginAccessTokenResponse tokenResponse = getTokenResponse(oAuth2Provider, code);
+        final OAuthLoginAccessTokenResponse tokenResponse = oAuthManager.requestAccessToken(provider, code);
 
-        final OAuthLoginUserResponse userInfoResponse = getUserResponse(oAuth2Provider.getUserRequestUri(), tokenResponse);
+        final OAuthLoginUserResponse userInfoResponse = oAuthManager.getUserInfo(oAuth2Provider.getUserRequestUri(), tokenResponse);
 
         final Authentication authentication = getAuthentication(userInfoResponse);
 
@@ -79,20 +80,6 @@ public class OAuthAuthenticationFilter implements Filter {
 
     private boolean isOauth2Login(final String httpMethod, final String requestUri) {
         return OAUTH2_LOGIN_TOKEN_REQUEST_METHOD.equals(httpMethod) && requestUri.startsWith(OAUTH2_LOGIN_TOKEN_REQUEST_URI);
-    }
-
-    private OAuthLoginAccessTokenResponse getTokenResponse(final Oauth2LoginProperties.OAuth2Provider oAuth2Provider, final String code) {
-        final OAuthLoginAccessTokenRequest accessTokenRequest
-                = OAuthLoginAccessTokenRequest.created(oAuth2Provider.getClientId(), oAuth2Provider.getSecretKey(), code, oAuth2Provider.getGrantType(), oAuth2Provider.getLoginRedirectUri());
-
-        return oAuthClient.post(oAuth2Provider.getTokenRequestUri(), accessTokenRequest, new TypeReference<>() { });
-    }
-
-    private OAuthLoginUserResponse getUserResponse(final String userRequestUri, final OAuthLoginAccessTokenResponse tokenResponse) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.put("Authorization", List.of(String.join(" ", tokenResponse.getTokenType(), tokenResponse.getAccessToken())));
-
-        return oAuthClient.get(userRequestUri, headers, new TypeReference<>() { });
     }
 
     private Authentication getAuthentication(final OAuthLoginUserResponse userInfoResponse) {
