@@ -41,6 +41,7 @@ public class OAuthLoginRedirectFilter implements Filter {
 
         if (oAuth2Provider == null) {
             chain.doFilter(request, response);
+            return;
         }
 
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
