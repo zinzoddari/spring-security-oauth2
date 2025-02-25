@@ -9,6 +9,7 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.security.authentication.OAuthAuthenticationFilter;
 import nextstep.security.authentication.OAuthLoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
@@ -63,7 +64,7 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
-                        new OAuthLoginRedirectFilter(oauth2LoginProperties),
+                        new OAuth2AuthorizationRequestRedirectFilter(oauth2LoginProperties),
                         new OAuthAuthenticationFilter(oauth2LoginProperties, userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
